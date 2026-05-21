@@ -32,7 +32,7 @@ Four tools solve these individually. `cargo-vibecode` packages the `cargo-vibe` 
 From a released tag:
 
 ```bash
-cargo install --git https://github.com/asmuelle/cargo-vibecode --tag v0.1.0 cargo-vibe
+cargo install --git https://github.com/asmuelle/cargo-vibecode --tag v0.2.0 cargo-vibe
 ```
 
 From a local checkout:
@@ -115,7 +115,7 @@ The loop:
 5. Runs `spec-drift --deny warning` — checks for doc/CI drift
 6. If all pass: done. If any fail: feeds failures back for retry (up to `--max-attempts`, default 3)
 
-The generation step is intentionally manual in `v0.1.0`; `cargo-vibe` does not call LLM APIs.
+The generation step is automated in `v0.2.0` via standard programmatic client integrations (`LlmClient`), defaulting to Ollama or OpenAI/vLLM for local-first privacy while prompting with interactive unified diffs for confirmation.
 
 Options:
 ```bash
@@ -224,7 +224,7 @@ cargo test --all-features
 cargo install --path . --locked
 ```
 
-This `v0.1.0` release resolves `ai-tools-core` from the `asmuelle/ai-tools-core` `v0.1.0` git tag. A crates.io release additionally requires publishing `ai-tools-core` to crates.io and changing the dependency to the registry version before running `cargo package` / `cargo publish --dry-run`.
+This `v0.2.0` release resolves `ai-tools-core` from the `asmuelle/ai-tools-core` `v0.2.0` git tag. A crates.io release additionally requires publishing `ai-tools-core` to crates.io and changing the dependency to the registry version before running `cargo package` / `cargo publish --dry-run`.
 
 ### Pre-commit Hook
 
