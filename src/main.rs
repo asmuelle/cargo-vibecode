@@ -112,6 +112,12 @@ enum Commands {
         /// Git ref to base the fix on.
         #[arg(long, default_value = "HEAD")]
         since: String,
+        /// Opt in to the Clippy Auto-Healer: after LLM changes are applied,
+        /// run `cargo clippy` and auto-apply machine-applicable suggestions
+        /// (up to 5 passes). Off by default; applied fixes are summarized
+        /// per file and included in the risk-checked diff.
+        #[arg(long)]
+        auto_heal: bool,
     },
 }
 
@@ -155,12 +161,14 @@ fn main() -> ExitCode {
             max_attempts,
             risk_threshold,
             since,
+            auto_heal,
         } => run_fix(
             &cli.root,
             &prompt,
             max_attempts,
             risk_threshold,
             &since,
+            auto_heal,
             config.as_ref(),
         ),
     };
@@ -510,6 +518,7 @@ fn run_fix(
     max_attempts: usize,
     risk_threshold: Option<f32>,
     since: &str,
+    auto_heal: bool,
     config: Option<&ai_tools_core::config::VibeConfig>,
 ) -> Result<ExitCode> {
     let risk_threshold = risk_threshold.unwrap_or_else(|| {
@@ -518,11 +527,19 @@ fn run_fix(
             .or(config.and_then(|c| c.vibe.threshold))
             .unwrap_or(7.0)
     });
-    let mut fix_loop = FixLoop::new(root, prompt, max_attempts, risk_threshold, since);
+    let mut fix_loop = FixLoop::new(root, prompt, max_attempts, risk_threshold, since, auto_heal);
 
     eprintln!("cargo-vibe: starting fix loop with {max_attempts} max attempts...");
     eprintln!("  Risk threshold: {risk_threshold}");
     eprintln!("  Base ref: {since}");
+    eprintln!(
+        "  Clippy Auto-Healer: {}",
+        if auto_heal {
+            "enabled (--auto-heal)"
+        } else {
+            "disabled (opt in with --auto-heal)"
+        }
+    );
 
     let result = fix_loop.run()?;
 

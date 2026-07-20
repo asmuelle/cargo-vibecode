@@ -110,10 +110,11 @@ cargo vibe fix --prompt "Implement user authentication with JWT tokens"
 The loop:
 1. Assembles context pack (compiler errors, diff, project map, entry points, related tests)
 2. Presents context + prompt for the user to paste into their LLM
-3. After user applies changes: runs `diff-risk` — rejects if score ≥ threshold (default 7.0)
-4. Runs `cargo-impact --fail-on high` — surfaces affected tests
-5. Runs `spec-drift --deny warning` — checks for doc/CI drift
-6. If all pass: done. If any fail: feeds failures back for retry (up to `--max-attempts`, default 3)
+3. *Optional, opt-in via `--auto-heal`*: runs the Clippy Auto-Healer — up to 5 passes of `cargo clippy --all-targets`, auto-applying only `MachineApplicable` suggestions. It prints a per-file summary of every applied fix (count and lint names) before the loop continues, and the auto-applied changes are included in the diff scored by the next step. Off by default; when the flag is absent no clippy run happens and no files are touched.
+4. After user applies changes: runs `diff-risk` — rejects if score ≥ threshold (default 7.0)
+5. Runs `cargo-impact --fail-on high` — surfaces affected tests
+6. Runs `spec-drift --deny warning` — checks for doc/CI drift
+7. If all pass: done. If any fail: feeds failures back for retry (up to `--max-attempts`, default 3)
 
 The generation step is automated in `v0.2.0` via standard programmatic client integrations (`LlmClient`), defaulting to Ollama or OpenAI/vLLM for local-first privacy while prompting with interactive unified diffs for confirmation.
 
@@ -123,7 +124,8 @@ cargo vibe fix \
   --prompt "Refactor the auth module" \
   --max-attempts 5 \
   --risk-threshold 6.0 \
-  --since origin/main
+  --since origin/main \
+  --auto-heal          # opt in to clippy auto-healing (default: off)
 ```
 
 ### `cargo vibe risk`
